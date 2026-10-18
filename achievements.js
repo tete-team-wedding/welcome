@@ -1,5 +1,6 @@
 (function () {
   var STORAGE_KEY = "teteTeamWedding.achievements";
+  var ACHIEVEMENT_STATS_URL = "https://script.google.com/macros/s/AKfycbyHFR2bybXoS6iQAaUzp4MpdI74Bkov35fzjU9cIMlpBG2SNwcXRqBlEOijHE6aJg0/exec";
   var NORMAL_ACHIEVEMENT_ICON = "✦";
   var HIDDEN_ACHIEVEMENT_ICON = "🔑";
   var ACHIEVEMENT_MENU_ORDER = [
@@ -197,9 +198,13 @@
 
   function createDefaultState() {
     return {
-      version: 1,
+      version: 3,
       language: "th",
+      playerId: "",
       unlocked: [],
+      completionTimes: {},
+      reportedAchievements: [],
+      statsOutbox: [],
       progress: {},
       pendingToast: [],
     };
@@ -247,11 +252,46 @@
 
   function normalizeState(rawState) {
     var normalized = createDefaultState();
-    if (!rawState || typeof rawState !== "object") return normalized;
-    normalized.version = rawState.version || 1;
+    if (!rawState || typeof rawState !== "object") {
+      normalized.playerId = createPlayerId();
+      return normalized;
+    }
+    normalized.version = 3;
     normalized.language = rawState.language === "en" ? "en" : "th";
+    normalized.playerId =
+      typeof rawState.playerId === "string" && /^[a-f0-9-]{36}$/i.test(rawState.playerId)
+        ? rawState.playerId
+        : createPlayerId();
     normalized.unlocked = Array.isArray(rawState.unlocked)
       ? uniqueList(rawState.unlocked.filter(function (id) { return !!getAchievementById(id); }))
+      : [];
+    normalized.reportedAchievements = Array.isArray(rawState.reportedAchievements)
+      ? uniqueList(rawState.reportedAchievements.filter(function (id) {
+          return !!getAchievementById(id);
+        }))
+      : [];
+    if (rawState.completionTimes && typeof rawState.completionTimes === "object") {
+      Object.keys(rawState.completionTimes).forEach(function (id) {
+        var completedAt = rawState.completionTimes[id];
+        if (getAchievementById(id) && typeof completedAt === "string" && !isNaN(Date.parse(completedAt))) {
+          normalized.completionTimes[id] = completedAt;
+        }
+      });
+    }
+    normalized.statsOutbox = Array.isArray(rawState.statsOutbox)
+      ? rawState.statsOutbox.filter(function (event) {
+          return event && !!getAchievementById(event.achievementId) &&
+            normalized.reportedAchievements.indexOf(event.achievementId) === -1 &&
+            typeof event.completedAt === "string" && !isNaN(Date.parse(event.completedAt));
+        }).map(function (event) {
+          return {
+            playerId: /^[a-f0-9-]{36}$/i.test(event.playerId || "")
+              ? event.playerId
+              : normalized.playerId,
+            achievementId: event.achievementId,
+            completedAt: event.completedAt,
+          };
+        })
       : [];
     normalized.progress = rawState.progress && typeof rawState.progress === "object" ? rawState.progress : {};
     var pendingToasts = Array.isArray(rawState.pendingToast)
@@ -271,6 +311,111 @@
 
   function isUnlocked(id) {
     return state.unlocked.indexOf(id) !== -1;
+  }
+
+  function createPlayerId() {
+    var crypto = window.crypto;
+    if (crypto && typeof crypto.randomUUID === "function") {
+      return crypto.randomUUID();
+    }
+
+    var bytes = new Uint8Array(16);
+    if (crypto && typeof crypto.getRandomValues === "function") {
+      crypto.getRandomValues(bytes);
+    } else {
+      for (var i = 0; i < bytes.length; i += 1) {
+        bytes[i] = Math.floor(Math.random() * 256);
+      }
+    }
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    var hex = Array.prototype.map.call(bytes, function (byte) {
+      return byte.toString(16).padStart(2, "0");
+    }).join("");
+    return hex.slice(0, 8) + "-" + hex.slice(8, 12) + "-" + hex.slice(12, 16) + "-" +
+      hex.slice(16, 20) + "-" + hex.slice(20);
+  }
+
+  function createStatsEvent(achievementId, completedAt) {
+    return {
+      playerId: state.playerId,
+      achievementId: achievementId,
+      completedAt: completedAt,
+    };
+  }
+
+  var statsRequestsInFlight = {};
+
+  function flushStatsOutbox() {
+    if (!ACHIEVEMENT_STATS_URL || !window.fetch) return;
+
+    state.statsOutbox.slice().forEach(function (event) {
+      var requestKey = event.playerId + ":" + event.achievementId;
+      if (statsRequestsInFlight[requestKey]) return;
+      statsRequestsInFlight[requestKey] = true;
+      fetch(ACHIEVEMENT_STATS_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(event),
+      })
+        .then(function (response) {
+          if (response.type === "opaque") return true;
+          if (!response.ok) {
+            throw new Error("Achievement statistics request failed with status " + response.status);
+          }
+          return response.json();
+        })
+        .then(function (payload) {
+          if (payload === true) {
+            state.reportedAchievements = uniqueList(
+              state.reportedAchievements.concat(event.achievementId),
+            );
+            state.statsOutbox = state.statsOutbox.filter(function (queuedEvent) {
+              return queuedEvent.playerId !== event.playerId ||
+                queuedEvent.achievementId !== event.achievementId;
+            });
+            storeState();
+            return;
+          }
+          if (!payload || payload.ok !== true) {
+            throw new Error("Achievement statistics endpoint did not confirm the event");
+          }
+          state.reportedAchievements = uniqueList(
+            state.reportedAchievements.concat(event.achievementId),
+          );
+          state.statsOutbox = state.statsOutbox.filter(function (queuedEvent) {
+            return queuedEvent.playerId !== event.playerId ||
+              queuedEvent.achievementId !== event.achievementId;
+          });
+          storeState();
+        })
+        .catch(function (error) {
+          console.warn("Could not submit achievement statistics; it will be retried later.", error);
+        })
+        .then(function () {
+          delete statsRequestsInFlight[requestKey];
+        });
+    });
+  }
+
+  function queueUnlockedAchievementStats() {
+    var changed = false;
+    state.unlocked.forEach(function (id) {
+      if (!state.completionTimes[id]) {
+        state.completionTimes[id] = new Date().toISOString();
+        changed = true;
+      }
+      if (state.reportedAchievements.indexOf(id) !== -1) return;
+      var isQueued = state.statsOutbox.some(function (event) {
+        return event.achievementId === id;
+      });
+      if (!isQueued) {
+        state.statsOutbox.push(createStatsEvent(id, state.completionTimes[id]));
+        changed = true;
+      }
+    });
+    if (changed) storeState();
   }
 
   function renderAchievementToggleIcon(animateSecretReveal) {
@@ -299,8 +444,10 @@
   }
 
   function loadState() {
-    state = normalizeState(readStorageJSON(STORAGE_KEY));
-    if (!readStorageJSON(STORAGE_KEY)) {
+    var storedState = readStorageJSON(STORAGE_KEY);
+    state = normalizeState(storedState);
+    if (!storedState || storedState.version !== 3 || !storedState.playerId ||
+        !Array.isArray(storedState.reportedAchievements)) {
       storeState();
     }
   }
@@ -533,7 +680,10 @@
     var definition = getAchievementById(id);
     if (!definition || isUnlocked(id)) return false;
 
+    var completedAt = new Date().toISOString();
     state.unlocked = uniqueList(state.unlocked.concat(id));
+    state.completionTimes[id] = completedAt;
+    state.statsOutbox.push(createStatsEvent(id, completedAt));
     if (deferToast) {
       state.pendingToast = uniqueList(state.pendingToast.concat(id));
     }
@@ -546,6 +696,7 @@
       maybeUnlockTouchGrassLater();
     }
     if (!deferToast) queueToast(definition);
+    flushStatsOutbox();
     return true;
   }
 
@@ -1091,6 +1242,8 @@
     renderAchievementRows();
     maybeUnlockCompletionist();
     maybeUnlockTouchGrassLater();
+    queueUnlockedAchievementStats();
+    flushStatsOutbox();
     document.addEventListener("visibilitychange", handlePageVisible);
     window.addEventListener("focus", handlePageVisible);
     document.addEventListener("wedding-lightbox-closed", handlePageVisible);
