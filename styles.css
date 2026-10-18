@@ -1554,6 +1554,7 @@ p {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 4px 14px;
+  align-content: start;
 }
 
 .places li:first-child {
