@@ -15,7 +15,7 @@
     "the-blessing",
     "the-secret-garden",
     "one-more-time",
-    "the-whole-story"
+    "the-whole-story",
   ];
   var ACHIEVEMENTS = [
     {
@@ -222,7 +222,10 @@
       if (!raw) return null;
       return JSON.parse(raw);
     } catch (error) {
-      console.warn("Could not load achievement progress from local storage.", error);
+      console.warn(
+        "Could not load achievement progress from local storage.",
+        error,
+      );
       return null;
     }
   }
@@ -232,7 +235,10 @@
       localStorage.setItem(key, JSON.stringify(value));
       return true;
     } catch (error) {
-      console.warn("Could not save achievement progress to local storage.", error);
+      console.warn(
+        "Could not save achievement progress to local storage.",
+        error,
+      );
       return false;
     }
   }
@@ -258,41 +264,67 @@
     normalized.version = 3;
     normalized.language = rawState.language === "en" ? "en" : "th";
     normalized.playerId =
-      typeof rawState.playerId === "string" && /^[a-f0-9-]{36}$/i.test(rawState.playerId)
+      typeof rawState.playerId === "string" &&
+      /^[a-f0-9-]{36}$/i.test(rawState.playerId)
         ? rawState.playerId
         : createPlayerId();
     normalized.unlocked = Array.isArray(rawState.unlocked)
-      ? uniqueList(rawState.unlocked.filter(function (id) { return !!getAchievementById(id); }))
+      ? uniqueList(
+          rawState.unlocked.filter(function (id) {
+            return !!getAchievementById(id);
+          }),
+        )
       : [];
-    normalized.reportedAchievements = Array.isArray(rawState.reportedAchievements)
-      ? uniqueList(rawState.reportedAchievements.filter(function (id) {
-          return !!getAchievementById(id);
-        }))
+    normalized.reportedAchievements = Array.isArray(
+      rawState.reportedAchievements,
+    )
+      ? uniqueList(
+          rawState.reportedAchievements.filter(function (id) {
+            return !!getAchievementById(id);
+          }),
+        )
       : [];
-    if (rawState.completionTimes && typeof rawState.completionTimes === "object") {
+    if (
+      rawState.completionTimes &&
+      typeof rawState.completionTimes === "object"
+    ) {
       Object.keys(rawState.completionTimes).forEach(function (id) {
         var completedAt = rawState.completionTimes[id];
-        if (getAchievementById(id) && typeof completedAt === "string" && !isNaN(Date.parse(completedAt))) {
+        if (
+          getAchievementById(id) &&
+          typeof completedAt === "string" &&
+          !isNaN(Date.parse(completedAt))
+        ) {
           normalized.completionTimes[id] = completedAt;
         }
       });
     }
     normalized.statsOutbox = Array.isArray(rawState.statsOutbox)
-      ? rawState.statsOutbox.filter(function (event) {
-          return event && !!getAchievementById(event.achievementId) &&
-            normalized.reportedAchievements.indexOf(event.achievementId) === -1 &&
-            typeof event.completedAt === "string" && !isNaN(Date.parse(event.completedAt));
-        }).map(function (event) {
-          return {
-            playerId: /^[a-f0-9-]{36}$/i.test(event.playerId || "")
-              ? event.playerId
-              : normalized.playerId,
-            achievementId: event.achievementId,
-            completedAt: event.completedAt,
-          };
-        })
+      ? rawState.statsOutbox
+          .filter(function (event) {
+            return (
+              event &&
+              !!getAchievementById(event.achievementId) &&
+              normalized.reportedAchievements.indexOf(event.achievementId) ===
+                -1 &&
+              typeof event.completedAt === "string" &&
+              !isNaN(Date.parse(event.completedAt))
+            );
+          })
+          .map(function (event) {
+            return {
+              playerId: /^[a-f0-9-]{36}$/i.test(event.playerId || "")
+                ? event.playerId
+                : normalized.playerId,
+              achievementId: event.achievementId,
+              completedAt: event.completedAt,
+            };
+          })
       : [];
-    normalized.progress = rawState.progress && typeof rawState.progress === "object" ? rawState.progress : {};
+    normalized.progress =
+      rawState.progress && typeof rawState.progress === "object"
+        ? rawState.progress
+        : {};
     var pendingToasts = Array.isArray(rawState.pendingToast)
       ? rawState.pendingToast
       : [rawState.pendingToast];
@@ -328,11 +360,22 @@
     }
     bytes[6] = (bytes[6] & 0x0f) | 0x40;
     bytes[8] = (bytes[8] & 0x3f) | 0x80;
-    var hex = Array.prototype.map.call(bytes, function (byte) {
-      return byte.toString(16).padStart(2, "0");
-    }).join("");
-    return hex.slice(0, 8) + "-" + hex.slice(8, 12) + "-" + hex.slice(12, 16) + "-" +
-      hex.slice(16, 20) + "-" + hex.slice(20);
+    var hex = Array.prototype.map
+      .call(bytes, function (byte) {
+        return byte.toString(16).padStart(2, "0");
+      })
+      .join("");
+    return (
+      hex.slice(0, 8) +
+      "-" +
+      hex.slice(8, 12) +
+      "-" +
+      hex.slice(12, 16) +
+      "-" +
+      hex.slice(16, 20) +
+      "-" +
+      hex.slice(20)
+    );
   }
 
   function createStatsEvent(achievementId, completedAt) {
@@ -365,7 +408,10 @@
         .then(function (response) {
           if (response.type === "opaque") return true;
           if (!response.ok) {
-            throw new Error("Achievement statistics request failed with status " + response.status);
+            throw new Error(
+              "Achievement statistics request failed with status " +
+                response.status,
+            );
           }
           return response.json();
         })
@@ -374,27 +420,38 @@
             state.reportedAchievements = uniqueList(
               state.reportedAchievements.concat(event.achievementId),
             );
-            state.statsOutbox = state.statsOutbox.filter(function (queuedEvent) {
-              return queuedEvent.playerId !== event.playerId ||
-                queuedEvent.achievementId !== event.achievementId;
-            });
+            state.statsOutbox = state.statsOutbox.filter(
+              function (queuedEvent) {
+                return (
+                  queuedEvent.playerId !== event.playerId ||
+                  queuedEvent.achievementId !== event.achievementId
+                );
+              },
+            );
             storeState();
             return;
           }
           if (!payload || payload.ok !== true) {
-            throw new Error("Achievement statistics endpoint did not confirm the event");
+            throw new Error(
+              "Achievement statistics endpoint did not confirm the event",
+            );
           }
           state.reportedAchievements = uniqueList(
             state.reportedAchievements.concat(event.achievementId),
           );
           state.statsOutbox = state.statsOutbox.filter(function (queuedEvent) {
-            return queuedEvent.playerId !== event.playerId ||
-              queuedEvent.achievementId !== event.achievementId;
+            return (
+              queuedEvent.playerId !== event.playerId ||
+              queuedEvent.achievementId !== event.achievementId
+            );
           });
           storeState();
         })
         .catch(function (error) {
-          console.warn("Could not submit achievement statistics; it will be retried later.", error);
+          console.warn(
+            "Could not submit achievement statistics; it will be retried later.",
+            error,
+          );
         })
         .then(function () {
           delete statsRequestsInFlight[requestKey];
@@ -449,8 +506,12 @@
   function loadState() {
     var storedState = readStorageJSON(STORAGE_KEY);
     state = normalizeState(storedState);
-    if (!storedState || storedState.version !== 3 || !storedState.playerId ||
-        !Array.isArray(storedState.reportedAchievements)) {
+    if (
+      !storedState ||
+      storedState.version !== 3 ||
+      !storedState.playerId ||
+      !Array.isArray(storedState.reportedAchievements)
+    ) {
       storeState();
     }
   }
@@ -459,12 +520,20 @@
     var button = document.getElementById("achievementLanguageToggle");
     if (button) {
       button.querySelectorAll("[data-language]").forEach(function (label) {
-        label.classList.toggle("is-active", label.dataset.language === state.language);
+        label.classList.toggle(
+          "is-active",
+          label.dataset.language === state.language,
+        );
       });
-      button.setAttribute("aria-pressed", state.language === "en" ? "true" : "false");
+      button.setAttribute(
+        "aria-pressed",
+        state.language === "en" ? "true" : "false",
+      );
       button.setAttribute(
         "aria-label",
-        state.language === "en" ? "Switch achievement language" : "เปลี่ยนภาษาของความสำเร็จ",
+        state.language === "en"
+          ? "Switch achievement language"
+          : "เปลี่ยนภาษาของความสำเร็จ",
       );
     }
 
@@ -472,10 +541,18 @@
     var popup = document.getElementById("achievementPopup");
     var toggle = document.getElementById("achievementToggle");
     var isEnglish = state.language === "en";
-    if (popupTitle) popupTitle.textContent = isEnglish ? "Achievements" : "ความสำเร็จ";
-    if (popup) popup.setAttribute("aria-label", isEnglish ? "Achievements" : "ความสำเร็จ");
+    if (popupTitle)
+      popupTitle.textContent = isEnglish ? "Achievements" : "ความสำเร็จ";
+    if (popup)
+      popup.setAttribute(
+        "aria-label",
+        isEnglish ? "Achievements" : "ความสำเร็จ",
+      );
     if (toggle) {
-      toggle.setAttribute("aria-label", isEnglish ? "Show achievements" : "แสดงความสำเร็จ");
+      toggle.setAttribute(
+        "aria-label",
+        isEnglish ? "Show achievements" : "แสดงความสำเร็จ",
+      );
     }
   }
 
@@ -504,8 +581,12 @@
       item.appendChild(description);
     }
 
-    title.textContent = unlocked ? getAchievementText(definition, "title") : "???";
-    description.textContent = unlocked ? getAchievementText(definition, "description") : "";
+    title.textContent = unlocked
+      ? getAchievementText(definition, "title")
+      : "???";
+    description.textContent = unlocked
+      ? getAchievementText(definition, "description")
+      : "";
     description.hidden = !unlocked;
     item.classList.toggle("is-unlocked", unlocked);
     item.classList.toggle("is-secret", definition.category === "hidden");
@@ -522,48 +603,60 @@
     if (!list) return;
 
     var keyedRows = {};
-    Array.prototype.forEach.call(list.querySelectorAll("li[data-achievement-id]"), function (item) {
-      keyedRows[item.dataset.achievementId] = item;
-    });
+    Array.prototype.forEach.call(
+      list.querySelectorAll("li[data-achievement-id]"),
+      function (item) {
+        keyedRows[item.dataset.achievementId] = item;
+      },
+    );
 
-    ACHIEVEMENTS.slice().sort(function (a, b) {
-      return getAchievementMenuOrder(a.id) - getAchievementMenuOrder(b.id);
-    }).forEach(function (definition) {
-      var shouldDisplay = definition.category === "normal" || isUnlocked(definition.id);
-      if (!shouldDisplay) {
-        if (keyedRows[definition.id]) {
-          keyedRows[definition.id].remove();
+    ACHIEVEMENTS.slice()
+      .sort(function (a, b) {
+        return getAchievementMenuOrder(a.id) - getAchievementMenuOrder(b.id);
+      })
+      .forEach(function (definition) {
+        var shouldDisplay =
+          definition.category === "normal" || isUnlocked(definition.id);
+        if (!shouldDisplay) {
+          if (keyedRows[definition.id]) {
+            keyedRows[definition.id].remove();
+          }
+          return;
         }
-        return;
-      }
 
-      var item = keyedRows[definition.id];
-      if (!item) {
-        item = document.createElement("li");
-        item.dataset.achievementId = definition.id;
-        item.id = "achievement-" + definition.id;
-        list.appendChild(item);
-      }
+        var item = keyedRows[definition.id];
+        if (!item) {
+          item = document.createElement("li");
+          item.dataset.achievementId = definition.id;
+          item.id = "achievement-" + definition.id;
+          list.appendChild(item);
+        }
 
-      renderAchievementItem(item, definition);
-      keyedRows[definition.id] = item;
-    });
+        renderAchievementItem(item, definition);
+        keyedRows[definition.id] = item;
+      });
 
-    Array.prototype.forEach.call(list.querySelectorAll("li[data-achievement-id]"), function (item) {
-      var id = item.dataset.achievementId;
-      var definition = getAchievementById(id);
-      var shouldKeep = definition && (definition.category === "normal" || isUnlocked(id));
-      if (!shouldKeep) {
-        item.remove();
-      }
-    });
+    Array.prototype.forEach.call(
+      list.querySelectorAll("li[data-achievement-id]"),
+      function (item) {
+        var id = item.dataset.achievementId;
+        var definition = getAchievementById(id);
+        var shouldKeep =
+          definition && (definition.category === "normal" || isUnlocked(id));
+        if (!shouldKeep) {
+          item.remove();
+        }
+      },
+    );
   }
 
   function queueToast(definition) {
     if (!definition) return;
     if (
       state.pendingToast.indexOf(definition.id) !== -1 ||
-      activeToasts.some(function (entry) { return entry.definition.id === definition.id; })
+      activeToasts.some(function (entry) {
+        return entry.definition.id === definition.id;
+      })
     ) {
       return;
     }
@@ -571,7 +664,9 @@
     var lightbox = document.getElementById("lb");
     if (
       document.hidden ||
-      (definition.id === "certified-third-wheeler" && lightbox && !lightbox.hidden)
+      (definition.id === "certified-third-wheeler" &&
+        lightbox &&
+        !lightbox.hidden)
     ) {
       state.pendingToast.push(definition.id);
       storeState();
@@ -587,9 +682,12 @@
 
     var toast = template.cloneNode(true);
     toast.removeAttribute("id");
-    Array.prototype.forEach.call(toast.querySelectorAll("[id]"), function (element) {
-      element.removeAttribute("id");
-    });
+    Array.prototype.forEach.call(
+      toast.querySelectorAll("[id]"),
+      function (element) {
+        element.removeAttribute("id");
+      },
+    );
     toast.dataset.achievementId = definition.id;
     toast.hidden = false;
     toast.classList.remove("is-visible");
@@ -655,7 +753,8 @@
     window.clearTimeout(entry.timeoutId);
     window.clearTimeout(entry.highlightTimeoutId);
     entry.element.remove();
-    if (!keepHighlight && entry.item) entry.item.classList.remove("just-unlocked");
+    if (!keepHighlight && entry.item)
+      entry.item.classList.remove("just-unlocked");
     activeToasts = activeToasts.filter(function (activeEntry) {
       return activeEntry !== entry;
     });
@@ -663,7 +762,8 @@
 
   function renderToastText(definition, toast) {
     var toastName = toast && toast.querySelector(".achievement-toast-name");
-    var toastDescription = toast && toast.querySelector(".achievement-toast-description");
+    var toastDescription =
+      toast && toast.querySelector(".achievement-toast-description");
     var toastLabel = toast && toast.querySelector(".achievement-toast-label");
     var toastIcon = toast && toast.querySelector(".achievement-toast-sparkle");
     if (!toastName || !toastDescription || !toastLabel || !toastIcon) return;
@@ -671,14 +771,16 @@
     var isSecret = definition.category === "hidden";
     toast.classList.toggle("is-secret", isSecret);
     toastLabel.hidden = !isSecret;
-    toastLabel.textContent = state.language === "en"
-      ? "Secret Achievement Unlocked"
-      : "ความสำเร็จลับ";
+    toastLabel.textContent =
+      state.language === "en" ? "Secret Achievement Unlocked" : "ความสำเร็จลับ";
     toastIcon.textContent = isSecret
       ? HIDDEN_ACHIEVEMENT_ICON
       : NORMAL_ACHIEVEMENT_ICON;
     toastName.textContent = getAchievementText(definition, "title");
-    toastDescription.textContent = getAchievementText(definition, "description");
+    toastDescription.textContent = getAchievementText(
+      definition,
+      "description",
+    );
   }
 
   function unlockAchievement(id, deferToast) {
@@ -775,7 +877,9 @@
     var garden = document.getElementById("secretGarden");
     if (!garden) return;
 
-    var pieces = Array.prototype.slice.call(garden.querySelectorAll(".secret-garden-piece"));
+    var pieces = Array.prototype.slice.call(
+      garden.querySelectorAll(".secret-garden-piece"),
+    );
     var progress = getSecretGardenProgress();
     var hasGardenUnlock = isUnlocked("the-secret-garden");
     pieces.forEach(function (piece) {
@@ -783,7 +887,10 @@
       var isActive = hasGardenUnlock || progress.indexOf(index) !== -1;
       piece.classList.toggle("is-active", isActive);
     });
-    garden.classList.toggle("is-complete", hasGardenUnlock || progress.length >= 6);
+    garden.classList.toggle(
+      "is-complete",
+      hasGardenUnlock || progress.length >= 6,
+    );
     garden.setAttribute("aria-pressed", hasGardenUnlock ? "true" : "false");
   }
 
@@ -836,14 +943,19 @@
   }
 
   function syncTravelCategoryProgress() {
-    var buttons = Array.prototype.slice.call(document.querySelectorAll("#tabs button"));
+    var buttons = Array.prototype.slice.call(
+      document.querySelectorAll("#tabs button"),
+    );
     if (!buttons.length) return;
 
     var progress = getAchievementProgressList("definitely-not-planning-trips");
     buttons.forEach(function (button) {
       var name = (button.textContent || "").trim();
       if (!name) return;
-      if (button.getAttribute("aria-pressed") === "true" && progress.indexOf(name) === -1) {
+      if (
+        button.getAttribute("aria-pressed") === "true" &&
+        progress.indexOf(name) === -1
+      ) {
         progress.push(name);
       }
     });
@@ -851,7 +963,10 @@
     state.progress["definitely-not-planning-trips"] = uniqueList(progress);
     var allViewed = buttons.every(function (button) {
       var name = (button.textContent || "").trim();
-      return !name || state.progress["definitely-not-planning-trips"].indexOf(name) !== -1;
+      return (
+        !name ||
+        state.progress["definitely-not-planning-trips"].indexOf(name) !== -1
+      );
     });
 
     if (allViewed) {
@@ -868,25 +983,30 @@
       progress.push(activeIndex);
     }
 
-    var allSlides = Array.isArray(galleryState.uniqueIndexes) && galleryState.uniqueIndexes.length
-      ? galleryState.uniqueIndexes.slice()
-      : Array.prototype.slice
-          .call(document.querySelectorAll(".gal-slide"))
-          .map(function (slide) {
-            return Number(slide.dataset.i);
-          })
-          .filter(function (index) {
-            return !isNaN(index);
-          });
+    var allSlides =
+      Array.isArray(galleryState.uniqueIndexes) &&
+      galleryState.uniqueIndexes.length
+        ? galleryState.uniqueIndexes.slice()
+        : Array.prototype.slice
+            .call(document.querySelectorAll(".gal-slide"))
+            .map(function (slide) {
+              return Number(slide.dataset.i);
+            })
+            .filter(function (index) {
+              return !isNaN(index);
+            });
 
     if (!allSlides.length) return;
 
     state.progress["certified-third-wheeler"] = uniqueList(progress);
     if (
-      state.progress["certified-third-wheeler"].length !== previousProgress.length ||
-      state.progress["certified-third-wheeler"].some(function (index, position) {
-        return index !== previousProgress[position];
-      })
+      state.progress["certified-third-wheeler"].length !==
+        previousProgress.length ||
+      state.progress["certified-third-wheeler"].some(
+        function (index, position) {
+          return index !== previousProgress[position];
+        },
+      )
     ) {
       storeState();
     }
@@ -907,8 +1027,10 @@
   }
 
   function isAtPageBottom() {
-    return window.innerHeight + getScrollTop() >=
-      document.documentElement.scrollHeight - 2;
+    return (
+      window.innerHeight + getScrollTop() >=
+      document.documentElement.scrollHeight - 2
+    );
   }
 
   function isGateOpen() {
@@ -923,7 +1045,10 @@
     if (countdown) {
       var countdownRect = countdown.getBoundingClientRect();
       var viewportMiddle = window.innerHeight / 2;
-      if (countdownRect.top <= viewportMiddle && countdownRect.bottom >= viewportMiddle) {
+      if (
+        countdownRect.top <= viewportMiddle &&
+        countdownRect.bottom >= viewportMiddle
+      ) {
         unlockAchievement("countdown-started");
       }
     }
@@ -935,24 +1060,38 @@
 
   function maybeUnlockCompletionist() {
     var normalIds = ACHIEVEMENTS.filter(function (definition) {
-      return definition.category === "normal" && definition.id !== "completionist";
+      return (
+        definition.category === "normal" && definition.id !== "completionist"
+      );
     }).map(function (definition) {
       return definition.id;
     });
 
-    if (normalIds.length > 0 && normalIds.every(function (id) { return isUnlocked(id); })) {
+    if (
+      normalIds.length > 0 &&
+      normalIds.every(function (id) {
+        return isUnlocked(id);
+      })
+    ) {
       unlockAchievement("completionist");
     }
   }
 
   function maybeUnlockTouchGrassLater() {
     var hiddenIds = ACHIEVEMENTS.filter(function (definition) {
-      return definition.category === "hidden" && definition.id !== "the-whole-story";
+      return (
+        definition.category === "hidden" && definition.id !== "the-whole-story"
+      );
     }).map(function (definition) {
       return definition.id;
     });
 
-    if (hiddenIds.length > 0 && hiddenIds.every(function (id) { return isUnlocked(id); })) {
+    if (
+      hiddenIds.length > 0 &&
+      hiddenIds.every(function (id) {
+        return isUnlocked(id);
+      })
+    ) {
       unlockAchievement("the-whole-story");
     }
   }
@@ -1038,14 +1177,20 @@
       wasDragged = true;
       var rect = toggle.getBoundingClientRect();
       var margin = 8;
-      var left = Math.max(margin, Math.min(
-        dragStart.left + deltaX,
-        window.innerWidth - rect.width - margin,
-      ));
-      var top = Math.max(margin, Math.min(
-        dragStart.top + deltaY,
-        window.innerHeight - rect.height - margin,
-      ));
+      var left = Math.max(
+        margin,
+        Math.min(
+          dragStart.left + deltaX,
+          window.innerWidth - rect.width - margin,
+        ),
+      );
+      var top = Math.max(
+        margin,
+        Math.min(
+          dragStart.top + deltaY,
+          window.innerHeight - rect.height - margin,
+        ),
+      );
       var menu = toggle.parentElement;
       menu.style.left = left + "px";
       menu.style.top = top + "px";
@@ -1096,7 +1241,8 @@
   }
 
   function handlePageVisible() {
-    if (document.visibilityState !== "visible" || !state.pendingToast.length) return;
+    if (document.visibilityState !== "visible" || !state.pendingToast.length)
+      return;
 
     var lightbox = document.getElementById("lb");
     var pendingIds = state.pendingToast.filter(function (id) {
@@ -1217,9 +1363,13 @@
 
   function bindScrollProgress() {
     updateScrollAchievements();
-    window.addEventListener("scroll", function () {
-      updateScrollAchievements();
-    }, { passive: true });
+    window.addEventListener(
+      "scroll",
+      function () {
+        updateScrollAchievements();
+      },
+      { passive: true },
+    );
     window.addEventListener("resize", function () {
       updateScrollAchievements();
     });
@@ -1227,10 +1377,16 @@
 
   function init() {
     loadState();
-    if (getSecretGardenProgress().length >= 6 && !isUnlocked("the-secret-garden")) {
+    if (
+      getSecretGardenProgress().length >= 6 &&
+      !isUnlocked("the-secret-garden")
+    ) {
       unlockAchievement("the-secret-garden");
     }
-    if ((Number(state.progress["one-more-time"]) || 0) >= 5 && !isUnlocked("one-more-time")) {
+    if (
+      (Number(state.progress["one-more-time"]) || 0) >= 5 &&
+      !isUnlocked("one-more-time")
+    ) {
       unlockAchievement("one-more-time");
     }
     bindLanguageToggle();

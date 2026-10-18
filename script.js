@@ -1,6 +1,7 @@
 (function () {
   document.addEventListener("contextmenu", function (e) {
-    if (e.target instanceof Element && e.target.closest("img")) e.preventDefault();
+    if (e.target instanceof Element && e.target.closest("img"))
+      e.preventDefault();
   });
 
   /* =====================================================
@@ -36,7 +37,7 @@
     { src: "21", w: 1333, h: 2000 },
     { src: "22", w: 1333, h: 2000 },
     { src: "23", w: 1333, h: 2000 },
-    { src: "24", w: 2000, h: 1333 }
+    { src: "24", w: 2000, h: 1333 },
   ];
 
   // 3) สถานที่แนะนำ — n=ชื่อ, m=ที่ตั้ง·เวลาเปิด, d=คำอธิบาย, lat/lng=พิกัด, id=Google place id
@@ -48,7 +49,7 @@
   };
   var COLORS = {
     ร้านอาหาร: "#F08A93",
-    "คาเฟ่และร้านขนมหวาน": "#F8A56D",
+    คาเฟ่และร้านขนมหวาน: "#F8A56D",
     สถานที่ท่องเที่ยว: "#6FA3DE",
     ที่พัก: "#8FC46B",
   };

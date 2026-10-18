@@ -18,8 +18,7 @@
   --d-orange: #f8a56d;
   --d-pink: #f59da3;
   --achievement-popup-max-height: 50vh;
-  --thai:
-    "Bai Jamjuree", "Noto Sans Thai", "Leelawadee UI", Tahoma, sans-serif;
+  --thai: "Bai Jamjuree", "Noto Sans Thai", "Leelawadee UI", Tahoma, sans-serif;
   --latin: "Jost", "Futura", "Century Gothic", "Avenir Next", sans-serif;
   --r-cut: 30px 38px 32px 42px / 36px 30px 42px 32px;
   box-sizing: border-box;
@@ -343,7 +342,9 @@ p {
 }
 
 .achievement-toggle[aria-expanded="true"] {
-  box-shadow: 0 0 0 3px var(--ink), 0 4px 16px rgba(31, 86, 165, 0.24);
+  box-shadow:
+    0 0 0 3px var(--ink),
+    0 4px 16px rgba(31, 86, 165, 0.24);
 }
 
 .achievement-popup {
@@ -408,7 +409,9 @@ p {
   border-radius: 999px;
   padding: 5px 4px;
   color: var(--muted);
-  transition: background-color 160ms ease, color 160ms ease;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
 }
 
 .achievement-language-toggle [aria-hidden="true"] {
@@ -627,7 +630,8 @@ p {
 .achievement-toast.is-secret .achievement-toast-sparkle::after {
   bottom: -3px;
   left: -7px;
-  animation: secret-star-twinkle 700ms 180ms ease-in-out infinite alternate-reverse;
+  animation: secret-star-twinkle 700ms 180ms ease-in-out infinite
+    alternate-reverse;
 }
 
 @media (max-width: 699px) {
@@ -1236,7 +1240,7 @@ p {
   border-radius: 14px;
   overflow: hidden;
   background: var(--cream);
-  opacity: 0.20;
+  opacity: 0.2;
   filter: grayscale(100%) blur(1px);
   transform: scale(0.9);
   transition:
