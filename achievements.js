@@ -1,6 +1,5 @@
 (function () {
   var STORAGE_KEY = "teteTeamWedding.achievements";
-  var ACHIEVEMENT_STATS_URL = "https://script.google.com/macros/s/AKfycbyHFR2bybXoS6iQAaUzp4MpdI74Bkov35fzjU9cIMlpBG2SNwcXRqBlEOijHE6aJg0/exec";
   var NORMAL_ACHIEVEMENT_ICON = "✦";
   var HIDDEN_ACHIEVEMENT_ICON = "🔑";
   var ACHIEVEMENT_MENU_ORDER = [
@@ -347,13 +346,13 @@
   var statsRequestsInFlight = {};
 
   function flushStatsOutbox() {
-    if (!ACHIEVEMENT_STATS_URL || !window.fetch) return;
+    if (!window.APP_SCRIPT_URL || !window.fetch) return;
 
     state.statsOutbox.slice().forEach(function (event) {
       var requestKey = event.playerId + ":" + event.achievementId;
       if (statsRequestsInFlight[requestKey]) return;
       statsRequestsInFlight[requestKey] = true;
-      fetch(ACHIEVEMENT_STATS_URL + "?endpoint=achievement-stats", {
+      fetch(window.APP_SCRIPT_URL + "?endpoint=achievement-stats", {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "text/plain;charset=utf-8" },

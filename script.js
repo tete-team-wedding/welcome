@@ -7,11 +7,7 @@
      ✏️ ค่าที่แก้บ่อย อยู่ตรงนี้ทั้งหมด
      ===================================================== */
 
-  // 1) ลิงก์ Web App จาก Google Apps Script (ดูวิธีใน README) — ถ้าเว้นว่าง ฟอร์มจะให้ส่งทาง LINE แทน
-  var RSVP_URL =
-    "https://script.google.com/macros/s/AKfycbzrZRhuEEIEozlqkKZgWrJshf-yJ_MRrZlRYhXqjV2MYiWZ7JPfDRHGqZfXG_3P3A/exec";
-
-  // 2) รูปแกลเลอรี เรียงตามลำดับที่โชว์ (ไฟล์อยู่ใน images/gallery)
+  // 1) รูปแกลเลอรี เรียงตามลำดับที่โชว์ (ไฟล์อยู่ใน images/gallery)
   //    รูป: {src:'01', w:กว้าง, h:สูง} → ใช้ไฟล์ 01.jpg (ภาพใหญ่) และ 01-sm.jpg (ภาพเล็ก)
   //    วิดีโอ: {video:'00', ...} → ใช้ 00.mp4, 00.webm และ 00-poster.jpg
   //    w/h ใส่แค่สัดส่วนก็ได้ เช่น แนวตั้ง 2,3 แนวนอน 3,2
@@ -1291,13 +1287,13 @@
     }
     ep.style.display = "none";
     document.getElementById("result").classList.remove("show");
-    if (!RSVP_URL) {
+    if (!window.APP_SCRIPT_URL) {
       fallback(d);
       return;
     }
     btn.disabled = true;
     btn.textContent = "กำลังส่ง…";
-    fetch(RSVP_URL + "?endpoint=rsvp", {
+    fetch(window.APP_SCRIPT_URL + "?endpoint=rsvp", {
       method: "POST",
       mode: "cors",
       body: new URLSearchParams(d),

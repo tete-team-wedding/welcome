@@ -7,7 +7,8 @@
 ```
 index.html                 ← โครงหน้าเว็บและข้อความ
 styles.css                 ← รูปแบบและการจัดวาง
-script.js                  ← ค่าที่แก้บ่อยอยู่บนสุด: ลิงก์ RSVP, รูปแกลเลอรี และรายชื่อร้าน/ที่เที่ยว
+app-script-config.js       ← URL เว็บแอป Apps Script ที่ใช้ร่วมกันโดยฟอร์ม RSVP และสถิติความสำเร็จ
+script.js                  ← รูปแกลเลอรีและรายชื่อร้าน/ที่เที่ยว
 achievements.js            ← ความสำเร็จที่ปลดล็อกและความคืบหน้าของผู้เข้าชม
 images/
   achievement.png        Trophy button for opening the achievements popup
@@ -39,7 +40,7 @@ images/
 
 1. ใช้ Apps Script โปรเจกต์เดียวกับฟอร์ม RSVP แล้วเพิ่มโค้ดจาก `AppScript/achievement-statistics.gs`, `AppScript/rsvp.gs` และ `AppScript/router.gs` (ถ้าเป็น Apps Script แบบ standalone ให้กำหนด `SPREADSHEET_ID` ใน `achievement-statistics.gs`)
 2. Deploy หรืออัปเดต **เว็บแอป** โดยเลือกให้ทำงานในนามเจ้าของสคริปต์ และอนุญาต **ทุกคน** แล้วใช้ URL ที่ลงท้ายด้วย `/exec`
-3. ใส่ URL เดียวกันใน `ACHIEVEMENT_STATS_URL` ใน `achievements.js` และ `RSVP_URL` ใน `script.js`
+3. ใส่ URL ของเว็บแอปเพียงครั้งเดียวใน `app-script-config.js` ที่ตัวแปร `APP_SCRIPT_URL`
 
 `router.gs` เป็นจุดรับคำขอเดียว และเลือก handler จาก query parameter `endpoint` โดยตรง: `endpoint=rsvp` ส่งไป `handleRsvpPost` และ `endpoint=achievement-stats` ส่งไป `handleAchievementPost` การเลือก endpoint ไม่ขึ้นกับรูปแบบหรือชนิดของ request body และ endpoint ที่ไม่รู้จักจะถูกปฏิเสธ
 
@@ -83,7 +84,7 @@ Player ID เป็นตัวระบุแบบนามแฝงที่�
    - ดำเนินการในฐานะ: **ฉัน**
    - ผู้มีสิทธิ์เข้าถึง: **ทุกคน**
 3. กดอนุญาตสิทธิ์ แล้ว copy **URL ของเว็บแอป** (ลงท้ายด้วย `/exec`)
-4. ใส่ URL เว็บแอปพื้นฐาน (ลงท้ายด้วย `/exec` โดยไม่ต้องเติม query string) ใน `RSVP_URL` ใน `script.js` และ `ACHIEVEMENT_STATS_URL` ใน `achievements.js`; แต่ละหน้าเว็บจะเติม `endpoint` ที่ตรงกับคำขอให้อัตโนมัติ
+4. ตั้งค่า URL เว็บแอปพื้นฐาน (ลงท้ายด้วย `/exec` โดยไม่ต้องเติม query string) ใน `app-script-config.js`; หน้าเว็บจะเติม `endpoint` ที่ตรงกับคำขอให้อัตโนมัติ
 
 เมื่อแขกกดส่ง ข้อมูลจะเข้าแท็บ `[Respond]Guest list` ทันที โดยหัวคอลัมน์มีดังนี้
 วันเวลาที่ตอบ · ชื่อ-นามสกุล · แก้งค์ · สถานะ · จำนวนคน · ช่วงที่ร่วม · ข้อความถึงบ่าวสาว
@@ -93,9 +94,9 @@ Player ID เป็นตัวระบุแบบนามแฝงที่�
 - ถ้าเลือก “อื่นๆ” ในช่องแก้งค์ แขกต้องระบุรายละเอียด และข้อมูลจะส่งเป็น `อื่นๆ: <รายละเอียด>` ในช่อง `gang`; ตรวจสอบว่า Apps Script รองรับคีย์นี้และมีคอลัมน์แก้งค์ก่อนใช้งาน
 - ถ้าแก้โค้ดใน Apps Script ภายหลัง ต้องกด Deploy → จัดการการทำให้ใช้งานได้ → แก้ไข → เวอร์ชันใหม่ ทุกครั้ง
 
-ถ้า `RSVP_URL` ยังว่าง หรือส่งไม่สำเร็จ ฟอร์มจะให้แขกส่งข้อความทาง LINE แทน
+ถ้า `APP_SCRIPT_URL` ยังว่าง หรือส่งไม่สำเร็จ ฟอร์มจะให้แขกส่งข้อความทาง LINE แทน
 ฟอร์มจะแสดงว่าส่งสำเร็จเมื่ออ่าน JSON ตอบกลับได้และได้รับ `{ "ok": true }` เท่านั้น
-ถ้าเบราว์เซอร์แจ้ง CORS เมื่อเรียก Apps Script โดยตรง ให้ใช้ proxy ที่อนุญาต origin ของเว็บไซต์และส่งต่อคำขอไป Apps Script แล้วใส่ URL ของ proxy ใน `RSVP_URL`
+ถ้าเบราว์เซอร์แจ้ง CORS เมื่อเรียก Apps Script โดยตรง ให้ใช้ proxy ที่อนุญาต origin ของเว็บไซต์และส่งต่อคำขอไป Apps Script แล้วใส่ URL ของ proxy ใน `APP_SCRIPT_URL`
 
 ## ร้านและที่เที่ยวสุรินทร์
 
