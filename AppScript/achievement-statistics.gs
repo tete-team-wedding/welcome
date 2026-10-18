@@ -1,22 +1,6 @@
 var SPREADSHEET_ID = "13QOvAMPbrk6pwLJVs6K-HUFqOjfw6nDUeDsj-qZkhjA";
 var STATS_SHEET_NAME = "[Stats]eCard Achievement";
 
-var ACHIEVEMENT_IDS = [
-  "achievementFirstContact",
-  "countdown-started",
-  "definitely-not-planning-trips",
-  "color-me-impressed",
-  "certified-third-wheeler",
-  "the-grand-tour",
-  "bilingual",
-  "completionist",
-  "google-maps-expert",
-  "the-secret-garden",
-  "the-whole-story",
-  "one-more-time",
-  "the-blessing",
-];
-
 var COMPLETION_HEADERS = [
   "Player ID",
   "Achievement ID",
@@ -69,8 +53,8 @@ function parseCompletion(e) {
       !/^[a-f0-9-]{36}$/i.test(completion.playerId)) {
     throw new Error("Invalid player ID.");
   }
-  if (ACHIEVEMENT_IDS.indexOf(completion.achievementId) === -1) {
-    throw new Error("Invalid achievement ID.");
+  if (typeof completion.achievementId !== "string" || !completion.achievementId) {
+    throw new Error("Invalid achievement title.");
   }
 
   var completedAt = new Date(completion.completedAt);
@@ -111,7 +95,6 @@ function ensureHeaders(sheet) {
   })) {
     return sheet;
   }
-
   throw new Error("The statistics sheet has unexpected headers. Check the configured STATS_SHEET_NAME.");
 }
 

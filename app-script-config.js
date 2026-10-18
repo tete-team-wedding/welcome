@@ -1,2 +1,2 @@
 window.APP_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbxQqc7t7f5XTH3ZjSNjHQklnd3wa9kBnxQ52CGwe_Wvsqm8qsvX5rbNg_g8Vvhapzg/exec";
+  "https://script.google.com/macros/s/AKfycbxCkkN-qA3zujq0Q4NOdd-d7ltZyRzjUaB6CDwLM5sGfKWi1a-GIkPgkEp_A8giAHU/exec";

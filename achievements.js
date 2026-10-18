@@ -3,7 +3,7 @@
   var NORMAL_ACHIEVEMENT_ICON = "✦";
   var HIDDEN_ACHIEVEMENT_ICON = "🔑";
   var ACHIEVEMENT_MENU_ORDER = [
-    "achievementFirstContact",
+    "first-contact",
     "countdown-started",
     "definitely-not-planning-trips",
     "color-me-impressed",
@@ -19,7 +19,7 @@
   ];
   var ACHIEVEMENTS = [
     {
-      id: "achievementFirstContact",
+      id: "first-contact",
       category: "normal",
       icon: NORMAL_ACHIEVEMENT_ICON,
       title: {
@@ -356,7 +356,11 @@
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(event),
+        body: JSON.stringify({
+          playerId: event.playerId,
+          achievementId: getAchievementById(event.achievementId).title.en,
+          completedAt: event.completedAt,
+        }),
       })
         .then(function (response) {
           if (response.type === "opaque") return true;
@@ -1136,7 +1140,7 @@
     var openCard = document.getElementById("openCard");
     if (openCard) {
       openCard.addEventListener("click", function () {
-        unlockAchievement("achievementFirstContact");
+        unlockAchievement("first-contact");
       });
     }
   }
