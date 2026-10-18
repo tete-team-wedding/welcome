@@ -390,7 +390,8 @@ p {
 .achievement-language-toggle {
   appearance: none;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: auto auto;
+  justify-content: end;
   align-items: stretch;
   box-sizing: border-box;
   width: 104px;
@@ -412,12 +413,6 @@ p {
   transition:
     background-color 160ms ease,
     color 160ms ease;
-}
-
-.achievement-language-toggle [aria-hidden="true"] {
-  display: grid;
-  place-items: center;
-  color: var(--muted);
 }
 
 .achievement-language-toggle [data-language].is-active {
