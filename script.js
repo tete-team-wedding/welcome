@@ -1297,7 +1297,7 @@
     }
     btn.disabled = true;
     btn.textContent = "กำลังส่ง…";
-    fetch(RSVP_URL, {
+    fetch(RSVP_URL + "?endpoint=rsvp", {
       method: "POST",
       mode: "cors",
       body: new URLSearchParams(d),

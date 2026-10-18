@@ -1,5 +1,5 @@
 var SPREADSHEET_ID = "13QOvAMPbrk6pwLJVs6K-HUFqOjfw6nDUeDsj-qZkhjA";
-var SHEET_NAME = "[Stats]eCard Achievement";
+var STATS_SHEET_NAME = "[Stats]eCard Achievement";
 
 var ACHIEVEMENT_IDS = [
   "achievementFirstContact",
@@ -24,7 +24,7 @@ var COMPLETION_HEADERS = [
   "Received at",
 ];
 
-function doPost(e) {
+function handleAchievementPost(e) {
   var lock = LockService.getScriptLock();
   try {
     var completion = parseCompletion(e);
@@ -93,8 +93,8 @@ function getStatisticsSheet() {
     throw new Error("Bind this script to a spreadsheet or set SPREADSHEET_ID.");
   }
 
-  var sheet = spreadsheet.getSheetByName(SHEET_NAME || "Achievement statistics");
-  if (!sheet && !SHEET_NAME) sheet = spreadsheet.insertSheet("Achievement statistics");
+  var sheet = spreadsheet.getSheetByName(STATS_SHEET_NAME || "Achievement statistics");
+  if (!sheet && !STATS_SHEET_NAME) sheet = spreadsheet.insertSheet("Achievement statistics");
   if (!sheet) throw new Error("The configured statistics sheet was not found.");
   return sheet;
 }
@@ -112,7 +112,7 @@ function ensureHeaders(sheet) {
     return sheet;
   }
 
-  throw new Error("The statistics sheet has unexpected headers. Check the configured SHEET_NAME.");
+  throw new Error("The statistics sheet has unexpected headers. Check the configured STATS_SHEET_NAME.");
 }
 
 function jsonResponse(payload) {

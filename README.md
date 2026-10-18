@@ -37,10 +37,11 @@ images/
 `achievements.js` จะส่งรหัสผู้เล่นแบบสุ่มที่บันทึกไว้ในเบราว์เซอร์ รหัสความสำเร็จ และเวลาที่ปลดล็อกแต่ละรายการ
 ไม่มีชื่อหรือข้อมูล RSVP โดยความสำเร็จ `completionist` และ `the-whole-story` ใช้ระบุผู้เล่นที่เก็บครบทั้งความสำเร็จปกติและความลับ
 
-1. สร้าง Apps Script ที่ผูกกับ Google Sheet ที่ต้องการ แล้ววางโค้ดจาก `achievement-statistics.gs` (หรือกำหนด `SPREADSHEET_ID` ในโค้ด หากเป็น Apps Script แบบ standalone)
-2. ปล่อย `SHEET_NAME` ว่างไว้เพื่อให้สคริปต์สร้างแท็บ `Achievement statistics` หรือใส่ชื่อแท็บที่ต้องการภายหลัง
-3. Deploy เป็น **เว็บแอป** โดยเลือกให้ทำงานในนามเจ้าของสคริปต์ และอนุญาต **ทุกคน** แล้วคัดลอก URL ที่ลงท้ายด้วย `/exec`
-4. นำ URL ไปใส่ใน `ACHIEVEMENT_STATS_URL` ด้านบนของ `achievements.js`
+1. ใช้ Apps Script โปรเจกต์เดียวกับฟอร์ม RSVP แล้วเพิ่มโค้ดจาก `AppScript/achievement-statistics.gs`, `AppScript/rsvp.gs` และ `AppScript/router.gs` (ถ้าเป็น Apps Script แบบ standalone ให้กำหนด `SPREADSHEET_ID` ใน `achievement-statistics.gs`)
+2. Deploy หรืออัปเดต **เว็บแอป** โดยเลือกให้ทำงานในนามเจ้าของสคริปต์ และอนุญาต **ทุกคน** แล้วใช้ URL ที่ลงท้ายด้วย `/exec`
+3. ใส่ URL เดียวกันใน `ACHIEVEMENT_STATS_URL` ใน `achievements.js` และ `RSVP_URL` ใน `script.js`
+
+`router.gs` เป็นจุดรับคำขอเดียว และเลือก handler จาก query parameter `endpoint` โดยตรง: `endpoint=rsvp` ส่งไป `handleRsvpPost` และ `endpoint=achievement-stats` ส่งไป `handleAchievementPost` การเลือก endpoint ไม่ขึ้นกับรูปแบบหรือชนิดของ request body และ endpoint ที่ไม่รู้จักจะถูกปฏิเสธ
 
 สคริปต์จะสร้างหัวคอลัมน์บนแท็บที่เลือกเมื่อได้รับข้อมูลครั้งแรก (`Player ID`, `Achievement ID`, `Completed at`, `Received at`) แต่ละแถวเป็นเวลาปลดล็อกหนึ่งรายการของผู้เล่น และไม่บันทึกแถวซ้ำเมื่อผู้เล่นเดิมส่งความสำเร็จเดิมอีกครั้ง ให้นับผู้เล่นที่ทำครบโดยนับรหัส Player ID ที่มีทั้ง `completionist` และ `the-whole-story` หากแก้ Apps Script หลัง deploy ให้เผยแพร่เวอร์ชันใหม่
 
@@ -76,13 +77,13 @@ Player ID เป็นตัวระบุแบบนามแฝงที่�
 
 ตอนนี้เชื่อมกับไฟล์ **T&T_Wedding Planner** (Google Sheet) เรียบร้อยแล้ว ขั้นตอนด้านล่างใช้เมื่อต้องตั้งค่าใหม่เท่านั้น
 
-1. ในไฟล์ Google Sheet ไปที่เมนู **ส่วนขยาย → Apps Script** แล้วลบโค้ดเดิมทิ้ง วางโค้ด Apps Script ของฟอร์มตอบรับ (ไฟล์ `google-apps-script.gs` ไม่ได้อยู่ในโฟลเดอร์นี้ ต้องใช้สำเนาที่เก็บไว้ หรือเปิดโค้ดเดิมจากโปรเจกต์ Apps Script ของ T&T_Wedding Planner) แล้วกดบันทึก
-2. กด **ทำให้ใช้งานได้ (Deploy) → การทำให้ใช้งานได้รายการใหม่** แล้วตั้งค่าดังนี้
+1. ในโปรเจกต์ Apps Script เดียวกับสถิติความสำเร็จ ให้เพิ่มโค้ดจาก [`AppScript/rsvp.gs`](./AppScript/rsvp.gs), [`AppScript/achievement-statistics.gs`](./AppScript/achievement-statistics.gs) และ [`AppScript/router.gs`](./AppScript/router.gs) แล้วกดบันทึก
+2. กด **ทำให้ใช้งานได้ (Deploy) → จัดการการทำให้ใช้งานได้** แล้วแก้ไขการทำให้ใช้งานได้ของเว็บแอป หรือสร้างรายการใหม่หากจำเป็น ตั้งค่าดังนี้
    - ประเภท: **เว็บแอป**
    - ดำเนินการในฐานะ: **ฉัน**
    - ผู้มีสิทธิ์เข้าถึง: **ทุกคน**
 3. กดอนุญาตสิทธิ์ แล้ว copy **URL ของเว็บแอป** (ลงท้ายด้วย `/exec`)
-4. ใน `script.js` วางลิงก์ที่ได้ในบรรทัด `var RSVP_URL = '...';`
+4. ใส่ URL เว็บแอปพื้นฐาน (ลงท้ายด้วย `/exec` โดยไม่ต้องเติม query string) ใน `RSVP_URL` ใน `script.js` และ `ACHIEVEMENT_STATS_URL` ใน `achievements.js`; แต่ละหน้าเว็บจะเติม `endpoint` ที่ตรงกับคำขอให้อัตโนมัติ
 
 เมื่อแขกกดส่ง ข้อมูลจะเข้าแท็บ `[Respond]Guest list` ทันที โดยหัวคอลัมน์มีดังนี้
 วันเวลาที่ตอบ · ชื่อ-นามสกุล · แก้งค์ · สถานะ · จำนวนคน · ช่วงที่ร่วม · ข้อความถึงบ่าวสาว

@@ -353,7 +353,7 @@
       var requestKey = event.playerId + ":" + event.achievementId;
       if (statsRequestsInFlight[requestKey]) return;
       statsRequestsInFlight[requestKey] = true;
-      fetch(ACHIEVEMENT_STATS_URL, {
+      fetch(ACHIEVEMENT_STATS_URL + "?endpoint=achievement-stats", {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "text/plain;charset=utf-8" },

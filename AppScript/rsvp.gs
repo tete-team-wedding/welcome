@@ -4,7 +4,7 @@
  *
  * วิธีใช้: ดู README หัวข้อ "เชื่อมฟอร์มตอบรับกับ Google Sheet"
  */
-var SHEET_NAME = '[Respond]Guest list';
+var RSVP_SHEET_NAME = '[Respond]Guest list';
 
 // หัวคอลัมน์ในแถวที่ 1 (ถ้าแท็บยังว่าง สคริปต์จะสร้างให้เอง)
 // ถ้าชีทมีหัวคอลัมน์อยู่แล้วและชื่อต่างจากนี้ ให้แก้ชื่อฝั่งซ้ายให้ตรงกับในชีท
@@ -18,7 +18,7 @@ var COLUMNS = {
   'ข้อความถึงบ่าวสาว':     function (p) { return p.wish; }
 };
 
-function doPost(e) {
+function handleRsvpPost(e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
@@ -26,7 +26,7 @@ function doPost(e) {
     if (!p.name) return out({ ok: false, error: 'missing name' });
 
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sh = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
+    var sh = ss.getSheetByName(RSVP_SHEET_NAME) || ss.insertSheet(RSVP_SHEET_NAME);
     var names = Object.keys(COLUMNS);
 
     if (sh.getLastRow() === 0) {
