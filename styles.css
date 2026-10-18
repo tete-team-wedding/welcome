@@ -388,13 +388,39 @@ p {
 
 .achievement-language-toggle {
   appearance: none;
-  border: 1px solid var(--line);
-  background: var(--paper);
-  color: var(--ink);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+  box-sizing: border-box;
+  width: 104px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
   border-radius: 999px;
-  padding: 6px 10px;
+  padding: 3px;
   font: 600 12px/1.2 var(--thai);
   cursor: pointer;
+}
+
+.achievement-language-toggle [data-language] {
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  padding: 5px 4px;
+  color: var(--muted);
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.achievement-language-toggle [aria-hidden="true"] {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+.achievement-language-toggle [data-language].is-active {
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 700;
 }
 
 .achievement-popup ul {

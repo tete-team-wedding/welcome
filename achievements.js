@@ -458,7 +458,9 @@
   function renderLanguageToggle() {
     var button = document.getElementById("achievementLanguageToggle");
     if (button) {
-      button.textContent = state.language === "en" ? "EN" : "ไทย";
+      button.querySelectorAll("[data-language]").forEach(function (label) {
+        label.classList.toggle("is-active", label.dataset.language === state.language);
+      });
       button.setAttribute("aria-pressed", state.language === "en" ? "true" : "false");
       button.setAttribute(
         "aria-label",
