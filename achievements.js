@@ -114,12 +114,12 @@
       category: "normal",
       icon: NORMAL_ACHIEVEMENT_ICON,
       title: {
-        th: "เก็บครบจบทุกอัน",
-        en: "Completionist",
+        th: "เก็บครบจบทุกอัน...รึเปล่า?",
+        en: "Completionist... Unless?",
       },
       description: {
-        th: "ไม่มีอะไรหลุดรอดสายตาคุณไปได้เลย สงสัยเราต้องทำให้ยากกว่านี้แล้ว",
-        en: "Nothing gets past you. We should’ve made it harder.",
+        th: "คุณค้นพบความสำเร็จปกติครบหมดแล้ว แต่ใครจะรู้ว่ายังมีอะไรซ่อนอยู่อีกบ้าง? 👀",
+        en: "You’ve found all the normal achievements. But who knows what else is hiding? 👀",
       },
     },
     {
