@@ -602,6 +602,11 @@
     var list = document.querySelector("#achievementPopup ul");
     if (!list) return;
 
+    var revealHiddenAchievements =
+      isUnlocked("completionist") ||
+      ACHIEVEMENTS.some(function (definition) {
+        return definition.category === "hidden" && isUnlocked(definition.id);
+      });
     var keyedRows = {};
     Array.prototype.forEach.call(
       list.querySelectorAll("li[data-achievement-id]"),
@@ -616,7 +621,8 @@
       })
       .forEach(function (definition) {
         var shouldDisplay =
-          definition.category === "normal" || isUnlocked(definition.id);
+          definition.category === "normal" ||
+          (definition.category === "hidden" && revealHiddenAchievements);
         if (!shouldDisplay) {
           if (keyedRows[definition.id]) {
             keyedRows[definition.id].remove();
@@ -642,7 +648,9 @@
         var id = item.dataset.achievementId;
         var definition = getAchievementById(id);
         var shouldKeep =
-          definition && (definition.category === "normal" || isUnlocked(id));
+          definition &&
+          (definition.category === "normal" ||
+            (definition.category === "hidden" && revealHiddenAchievements));
         if (!shouldKeep) {
           item.remove();
         }
