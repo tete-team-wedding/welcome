@@ -118,7 +118,7 @@
         en: "Completionist... Unless?",
       },
       description: {
-        th: "คุณค้นพบความสำเร็จปกติครบหมดแล้ว แต่ใครจะรู้ว่ายังมีอะไรซ่อนอยู่อีกบ้าง? 👀",
+        th: "คุณทำภารกิจทั่วไปสำเร็จแล้ว แต่ๆๆใครจะรู้ว่ายังมีอะไรซ่อนอยู่อีกบ้าง 👀",
         en: "You’ve found all the normal achievements. But who knows what else is hiding? 👀",
       },
     },
