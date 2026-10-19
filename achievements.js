@@ -807,7 +807,10 @@
     if (id !== "completionist") {
       maybeUnlockCompletionist();
     }
-    if (definition.category === "hidden" && id !== "the-whole-story") {
+    if (
+      (definition.category === "hidden" && id !== "the-whole-story") ||
+      id === "completionist"
+    ) {
       maybeUnlockTouchGrassLater();
     }
     if (!deferToast) queueToast(definition);
@@ -1095,6 +1098,7 @@
     });
 
     if (
+      isUnlocked("completionist") &&
       hiddenIds.length > 0 &&
       hiddenIds.every(function (id) {
         return isUnlocked(id);
